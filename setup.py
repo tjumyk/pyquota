@@ -1,11 +1,22 @@
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
+
+with open("README.md") as fh:
+    long_description = fh.read()
 
 ext = Extension('pyquota', sources=['pyquota.c'])
 
 setup(name='PyQuota',
-      version='1.0.0',
-      description='This is the first version',
+      version='0.0.1',
+      description='A simple python wrapper for C apis of quotactl',
+      long_description=long_description,
+      long_description_content_type="text/markdown",
       author='tjumyk',
       author_email='tjumyk@gmail.com',
       url='https://github.com/tjumyk/pyquota',
-      ext_modules=[ext])
+      ext_modules=[ext],
+      classifiers=[
+          'Development Status :: 3 - Alpha',
+          "Programming Language :: Python :: 3",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: POSIX :: Linux",
+      ])
