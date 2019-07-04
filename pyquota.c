@@ -483,12 +483,12 @@ PyMODINIT_FUNC PyInit_pyquota(void) {
     Py_INCREF(APIError);
     PyModule_AddObject(module, "APIError", APIError);
 
-    // register constant numbers
-    PyModule_AddObject(module, "QFMT_VFS_OLD", PyLong_FromLong(QFMT_VFS_OLD));
-    PyModule_AddObject(module, "QFMT_VFS_V0", PyLong_FromLong(QFMT_VFS_V0));
-    PyModule_AddObject(module, "QFMT_VFS_V1", PyLong_FromLong(QFMT_VFS_V1));
-    PyModule_AddObject(module, "DQF_ROOT_SQUASH", PyLong_FromLong(DQF_ROOT_SQUASH));
-    PyModule_AddObject(module, "DQF_SYS_FILE", PyLong_FromLong(DQF_SYS_FILE));
+    // register useful macros
+    PyModule_AddIntMacro(module, QFMT_VFS_OLD);
+    PyModule_AddIntMacro(module, QFMT_VFS_V0);
+    PyModule_AddIntMacro(module, QFMT_VFS_V1);
+    PyModule_AddIntMacro(module, DQF_ROOT_SQUASH);
+    PyModule_AddIntMacro(module, DQF_SYS_FILE);
 
     return module;
 }
