@@ -6,7 +6,7 @@ with open("README.md") as fh:
 ext = Extension('pyquota', sources=['pyquota.c'])
 
 setup(name='PyQuota',
-      version='0.0.1',
+      version='0.0.2',
       description='A simple python wrapper for C apis of quotactl',
       long_description=long_description,
       long_description_content_type="text/markdown",
