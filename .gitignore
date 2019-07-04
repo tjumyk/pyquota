@@ -3,4 +3,5 @@ dist/
 PyQuota.egg-info/
 
 # CLion
+.idea/
 cmake-build-debug/
