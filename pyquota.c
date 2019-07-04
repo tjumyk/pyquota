@@ -102,6 +102,7 @@ static PyObject *quotaOn(int cmdType, PyObject *args) {
         handleError(cmd);
         return NULL;
     }
+    Py_RETURN_NONE;
 }
 
 static PyObject *quotaOff(int cmdType, PyObject *args) {
@@ -115,6 +116,7 @@ static PyObject *quotaOff(int cmdType, PyObject *args) {
         handleError(cmd);
         return NULL;
     }
+    Py_RETURN_NONE;
 }
 
 static PyObject *getQuota(int cmdType, PyObject *args) {
