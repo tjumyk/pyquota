@@ -47,6 +47,31 @@ def test_quota_info_flags_constants():
     assert isinstance(pq.DQF_SYS_FILE, int)
 
 
+def test_quota_format_enum():
+    """QuotaFormat enum mirrors QFMT_* and is usable where int format is expected."""
+    import pyquota as pq
+
+    assert hasattr(pq, "QuotaFormat")
+    assert pq.QuotaFormat.VFS_OLD == pq.QFMT_VFS_OLD
+    assert pq.QuotaFormat.VFS_V0 == pq.QFMT_VFS_V0
+    assert pq.QuotaFormat.VFS_V1 == pq.QFMT_VFS_V1
+    assert isinstance(pq.QuotaFormat.VFS_V0, int)
+
+
+def test_quota_info_tuple_like_and_flag_properties():
+    """QuotaInfo is tuple-like and has .root_squash and .sys_file from flags."""
+    import pyquota as pq
+
+    info = pq.QuotaInfo(block_grace=86400, inode_grace=86400, flags=0)
+    assert info[0] == 86400 and info[1] == 86400 and info[2] == 0
+    assert info.root_squash is False
+    assert info.sys_file is False
+    info2 = pq.QuotaInfo(0, 0, pq.DQF_ROOT_SQUASH)
+    assert info2.root_squash is True
+    info3 = pq.QuotaInfo(0, 0, pq.DQF_SYS_FILE)
+    assert info3.sys_file is True
+
+
 def test_named_types_exported():
     import pyquota as pq
 
@@ -62,6 +87,15 @@ def test_named_types_exported():
     assert issubclass(pq.QuotaPartial, tuple)
     assert issubclass(pq.NextQuotaPartial, tuple)
     assert issubclass(pq.QuotaInfoPartial, tuple)
+
+
+def test_iter_quotas_exported():
+    import pyquota as pq
+
+    assert hasattr(pq, "iter_user_quotas")
+    assert hasattr(pq, "iter_group_quotas")
+    assert hasattr(pq, "iter_project_quotas")
+    assert callable(pq.iter_user_quotas)
 
 
 def test_errno_constants_exported():

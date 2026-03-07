@@ -14,8 +14,8 @@ XFS-specific quotactl commands (e.g. `Q_XQUOTAON`) are not supported.
 
 ### Breaking changes (current release)
 
-- **`get_user_quota`**, **`get_next_user_quota`**, **`get_user_quota_info`** (and group/project) now take an optional **`return_type`** and **default to named tuples**. Use `return_type="tuple"` to get the raw tuple (e.g. `pq.get_user_quota(device, uid, return_type="tuple")`).
-- **`get_user_quota_named`** and other **`*_named`** functions are **removed**; use the corresponding `get_*` with default `return_type="named"`.
+- **`get_user_quota`**, **`get_next_user_quota`**, **`get_user_quota_info`** (and group/project) **always return named tuples** (`Quota`, `NextQuota`, `QuotaInfo`). The `return_type` parameter has been removed; results are tuple-compatible (indexing, unpacking).
+- **`get_user_quota_named`** and other **`*_named`** functions are **removed**; use the corresponding `get_*`.
 - **`get_user_quota_with_valid`** and other **`*_with_valid`** functions are **replaced by `get_*_quota_partial`** (and `get_*_quota_info_partial`), which return **named tuples only** (`QuotaPartial`, `NextQuotaPartial`, `QuotaInfoPartial`) with optional fields as `None` when not set.
 
 ## Installation
@@ -53,7 +53,7 @@ pip install -e .
 | Q_GETFMT           | `get_user_quota_format`    | `get_group_quota_format`    | `get_project_quota_format`    |
 | Q_SYNC             | `sync_user_quotas`         | `sync_group_quotas`         | `sync_project_quotas`         |
 
-**Return type:** `get_*_quota`, `get_next_*_quota`, and `get_*_quota_info` accept an optional **`return_type`** (`"named"` | `"tuple"`). Default is **`"named"`**, returning `Quota`, `NextQuota`, or `QuotaInfo`. Use `return_type="tuple"` for the raw tuple.
+**Return type:** `get_*_quota`, `get_next_*_quota`, and `get_*_quota_info` return **named tuples** (`Quota`, `NextQuota`, `QuotaInfo`), which are tuple-compatible (indexing and unpacking work). `QuotaInfo` has **`.root_squash`** and **`.sys_file`** properties for the DQF_* flags. **`iter_user_quotas(device, start_uid=0)`** (and `iter_group_quotas`, `iter_project_quotas`) yield `NextQuota` for each ID with quota; they use `get_next_*` under the hood, so `get_next_*` remains the primitive for a single "next" query. **`QuotaFormat`** (IntEnum: `VFS_OLD`, `VFS_V0`, `VFS_V1`) can be used for `quota_on` / format checks. **Errors** raised from the public API have **`.device`** and **`.id`** set when applicable. **`set_*_quota`** validates that limits are non-negative ints.
 
 **Partial validity:** When the kernel may return incomplete data, use **`get_*_quota_partial`** or **`get_*_quota_info_partial`**. They return **named tuples** (`QuotaPartial`, etc.) where **fields the kernel did not set are `None`** (interpreted from the kernel’s valid mask per man 2 quotactl). Use e.g. `if q.block_hard_limit is not None:`. According to the man page, the kernel *currently* always fills all fields and sets the valid mask to QIF_ALL/IIF_ALL on get; the valid mask is used on *set* to indicate which fields the caller provides. The partial API exists for forward compatibility if a kernel ever returns incomplete data.
 
@@ -62,33 +62,32 @@ pip install -e .
 ```python
 import pyquota as pq
 
-# Turn on user quota for a filesystem
-pq.user_quota_on("/dev/sda1", pq.QFMT_VFS_V0, "/aquota.user")
+# Turn on user quota for a filesystem (QuotaFormat or QFMT_* int)
+pq.user_quota_on("/dev/sda1", pq.QuotaFormat.VFS_V0, "/aquota.user")
 
 # Turn off user quota
 pq.user_quota_off("/dev/sda1")
 
-# Get quota (default: named tuple Quota)
+# Get quota (returns Quota named tuple; tuple-compatible)
 quota = pq.get_user_quota("/dev/sda1", 1000)
 print(quota.block_hard_limit, quota.block_current)
 
-# Raw tuple: use return_type="tuple"
-raw = pq.get_user_quota("/dev/sda1", 1000, return_type="tuple")
-
-# Get next user with quota (kernel >= 4.6)
+# Get next user with quota (kernel >= 4.6), or iterate all
 next_quota = pq.get_next_user_quota("/dev/sda1", 1000)  # next_quota.id is the uid
+for nq in pq.iter_user_quotas("/dev/sda1"):
+    print(nq.id, nq.block_current)
 
 # Set user quota (hard 100MB, soft 90MB, no inode limits)
 pq.set_user_quota("/dev/sda1", 1000, 102400, 92160, 0, 0)
 
-# Or pass the result of get_user_quota (only the four limit fields are applied)
+# Or take the four limit fields from a Quota (e.g. from get_user_quota)
 q = pq.get_user_quota("/dev/sda1", 1000)
-pq.set_user_quota("/dev/sda1", 1000, quota=q)
+pq.set_user_quota("/dev/sda1", 1000, limits_from=q)
 
-# Quotafile info (grace periods in seconds, flags)
+# Quotafile info (tuple-like; .root_squash and .sys_file for flags)
 info = pq.get_user_quota_info("/dev/sda1")
 print(info.block_grace, info.inode_grace)
-print(bool(info.flags & pq.DQF_ROOT_SQUASH), bool(info.flags & pq.DQF_SYS_FILE))
+print(info.root_squash, info.sys_file)
 
 pq.set_user_quota_info("/dev/sda1", 604800, 604800, 0)  # 1 week grace, no flags
 
@@ -104,7 +103,7 @@ Replace `user` with `group` or `project` for group/project quotas. Project quota
 
 ## Error handling
 
-Errors from the C API are raised as **`pyquota.APIError`** (or a subclass) with messages matching the [quotactl(2) ERRORS](http://man7.org/linux/man-pages/man2/quotactl.2.html#ERRORS) section. Each instance has an `errno` attribute. Subclasses: **PermissionError** (EPERM), **NotFoundError** (ENOENT, ESRCH), **InvalidError** (EINVAL, etc.); catch `pq.APIError` or use `e.errno`.
+Errors from the C API are raised as **`pyquota.APIError`** (or a subclass) with messages matching the [quotactl(2) ERRORS](http://man7.org/linux/man-pages/man2/quotactl.2.html#ERRORS) section. Each instance has an **`errno`** attribute. When raised from the public API (get/set/iter, quota_on/off, etc.), **`device`** (the device path, or `None`) and **`id`** (the uid/gid/projid involved, or `None`) are set when applicable. Subclasses: **PermissionError** (EPERM), **NotFoundError** (ENOENT, ESRCH), **InvalidError** (EINVAL, etc.); catch `pq.APIError` or use `e.errno`.
 
 ```python
 import pyquota as pq

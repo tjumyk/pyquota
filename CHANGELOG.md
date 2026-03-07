@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-03-07
+
+### Added
+
+- **`iter_user_quotas(device, start_uid=0)`**, **`iter_group_quotas(device, start_gid=0)`**, **`iter_project_quotas(device, start_projid=0)`**: iterators yielding `NextQuota` for each ID with quota (use `get_next_*` for a single "next" query).
+- **`QuotaFormat`** (IntEnum): `VFS_OLD`, `VFS_V0`, `VFS_V1` for `quota_on` / `get_*_quota_format` (backward-compatible with QFMT_* ints).
+- **`QuotaInfo`** properties **`.root_squash`** and **`.sys_file`**: boolean views of DQF_* flags; type remains tuple-like (indexing, unpacking).
+- **Error context**: exceptions raised from the public API have **`.device`** and **`.id`** set when applicable.
+- **Validation**: `set_*_quota` requires limits to be non-negative ints; raises `ValueError`/`TypeError` before calling the kernel.
+- **Docstrings**: "See also" cross-references on get/set/iter and related functions.
+
+### Changed
+
+- **Breaking:** `get_*_quota`, `get_next_*_quota`, and `get_*_quota_info` no longer accept `return_type`; they always return the named tuple (`Quota`, `NextQuota`, or `QuotaInfo`). Results are tuple-compatible (indexing, unpacking).
+- **Breaking:** `set_*_quota` parameter `quota=` renamed to **`limits_from=`** to clarify that only the four limit fields are used (not usage or times).
+
 ## [0.1.2] - 2025-03-07
 
 ### Fixed
