@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PyQuota"
+version = "0.1.0"
+description = "A Python wrapper for Linux quotactl(2) APIs"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "tjumyk", email = "tjumyk@gmail.com" }
+]
+keywords = ["quota", "linux", "quotactl", "filesystem", "disk"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: System :: Filesystems",
+]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "pytest-cov>=4",
+    "ruff>=0.1",
+    "mypy>=1.0",
+]
+docs = [
+    "sphinx>=5",
+]
+
+[project.urls]
+Repository = "https://github.com/tjumyk/pyquota"
+Documentation = "https://tjumyk.github.io/pyquota/"
+Changelog = "https://github.com/tjumyk/pyquota/blob/main/CHANGELOG.md"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v"
+
+[tool.coverage.run]
+source = ["pyquota"]
+branch = false
+omit = ["pyquota/_native*", "*/tests/*"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover"]
+fail_under = 50
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+src = ["pyquota", "tests"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pyquota*"]

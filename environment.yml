@@ -1,0 +1,14 @@
+# Conda environment for building and testing PyQuota.
+# Create/update: conda env create -f environment.yml  # or: conda env update -f environment.yml
+# Activate: conda activate pyquota
+
+name: pyquota
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.9
+  - pip
+  - pytest
+  - ruff
+  - mypy

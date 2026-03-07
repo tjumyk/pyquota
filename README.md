@@ -1,22 +1,22 @@
 # PyQuota
 
-PyQuota is a simple python wrapper for C apis of [quotactl](http://man7.org/linux/man-pages/man2/quotactl.2.html).
+PyQuota is a Python wrapper for the Linux [quotactl(2)](http://man7.org/linux/man-pages/man2/quotactl.2.html) APIs.
 
-Supported kernel versions: `>=2.4.22, <5`.
+## Requirements
 
-Supported commands in C APIs:
+- **Linux** with quota support (kernel built with `CONFIG_QUOTA`)
+- **Privilege**: root or `CAP_SYS_ADMIN` for quota operations
+- **Kernel**: >= 2.4.22; project quota requires >= 4.1; `Q_GETNEXTQUOTA` requires >= 4.6
 
-- `Q_QUOTAON`
-- `Q_QUOTAOFF`
-- `Q_GETQUOTA`
-- `Q_GETNEXTQUOTA` (requires kernel >= 4.6)
-- `Q_SETQUOTA`
-- `Q_GETINFO`
-- `Q_SETINFO`
-- `Q_GETFMT`
-- `Q_SYNC`
+XFS-specific quotactl commands (e.g. `Q_XQUOTAON`) are not supported.
 
-Currently, none of the commands for XFS filesystem, e.g. `Q_XQUOTAON`, are supported due to lack of documentations and testing environments.
+**Future work:** Linux 5.13+ adds `quotactl_fd()`, which uses a file descriptor instead of a device path (useful for filesystems without a block device, e.g. UBIFS). This wrapper does not yet support it.
+
+### Breaking changes (current release)
+
+- **`get_user_quota`**, **`get_next_user_quota`**, **`get_user_quota_info`** (and group/project) now take an optional **`return_type`** and **default to named tuples**. Use `return_type="tuple"` to get the raw tuple (e.g. `pq.get_user_quota(device, uid, return_type="tuple")`).
+- **`get_user_quota_named`** and other **`*_named`** functions are **removed**; use the corresponding `get_*` with default `return_type="named"`.
+- **`get_user_quota_with_valid`** and other **`*_with_valid`** functions are **replaced by `get_*_quota_partial`** (and `get_*_quota_info_partial`), which return **named tuples only** (`QuotaPartial`, `NextQuotaPartial`, `QuotaInfoPartial`) with optional fields as `None` when not set.
 
 ## Installation
 
@@ -24,67 +24,103 @@ Currently, none of the commands for XFS filesystem, e.g. `Q_XQUOTAON`, are suppo
 pip install pyquota
 ```
 
-## Usage 
+From source (build deps: Python development headers, C compiler):
 
-For each of the supported commands, as listed above, this package provides 3 Python methods, which corresponds to operations on user quotas, group quotas and project quotas. Project quota methods requires kernel >=4.1.
+```bash
+git clone https://github.com/tjumyk/pyquota.git && cd pyquota
+pip install -e .
+```
 
-For illustration purpose, only examples of user quota methods are provided here. To use group/project quota methods, you only need to replace 'user' in the method names with 'group' or 'project'.
+## Units
+
+- **Block limits** (`block_hard_limit`, `block_soft_limit`): in **1024-byte** disk quota blocks ([quotactl(2)](http://man7.org/linux/man-pages/man2/quotactl.2.html))
+- **Current block usage** (`block_current`): in **bytes**
+- **Inode limits/current**: inodes (count)
+- **Grace periods** (`block_grace`, `inode_grace` in `QuotaInfo`): in **seconds** before soft limit becomes hard
+- **Time limits** (`block_time`, `inode_time` in `Quota`): **Unix timestamps** (seconds since epoch) when grace expires, or 0 if not over soft limit
+
+## API overview
+
+| quotactl command   | User quota                  | Group quota                  | Project quota                 |
+|--------------------|-----------------------------|------------------------------|-------------------------------|
+| Q_QUOTAON          | `user_quota_on`             | `group_quota_on`             | `project_quota_on`           |
+| Q_QUOTAOFF         | `user_quota_off`            | `group_quota_off`            | `project_quota_off`           |
+| Q_GETQUOTA         | `get_user_quota`           | `get_group_quota`            | `get_project_quota`           |
+| Q_GETNEXTQUOTA     | `get_next_user_quota`      | `get_next_group_quota`       | `get_next_project_quota`      |
+| Q_SETQUOTA         | `set_user_quota`           | `set_group_quota`            | `set_project_quota`          |
+| Q_GETINFO          | `get_user_quota_info`      | `get_group_quota_info`       | `get_project_quota_info`      |
+| Q_SETINFO          | `set_user_quota_info`      | `set_group_quota_info`      | `set_project_quota_info`      |
+| Q_GETFMT           | `get_user_quota_format`    | `get_group_quota_format`    | `get_project_quota_format`    |
+| Q_SYNC             | `sync_user_quotas`         | `sync_group_quotas`         | `sync_project_quotas`         |
+
+**Return type:** `get_*_quota`, `get_next_*_quota`, and `get_*_quota_info` accept an optional **`return_type`** (`"named"` | `"tuple"`). Default is **`"named"`**, returning `Quota`, `NextQuota`, or `QuotaInfo`. Use `return_type="tuple"` for the raw tuple.
+
+**Partial validity:** When the kernel may return incomplete data, use **`get_*_quota_partial`** or **`get_*_quota_info_partial`**. They return **named tuples** (`QuotaPartial`, etc.) where **fields the kernel did not set are `None`** (interpreted from the kernel’s valid mask per man 2 quotactl). Use e.g. `if q.block_hard_limit is not None:`. According to the man page, the kernel *currently* always fills all fields and sets the valid mask to QIF_ALL/IIF_ALL on get; the valid mask is used on *set* to indicate which fields the caller provides. The partial API exists for forward compatibility if a kernel ever returns incomplete data.
+
+## Usage
 
 ```python
-# Import package
 import pyquota as pq
 
 # Turn on user quota for a filesystem
-pq.user_quota_on("/dev/sda1", pq.QFMT_VFS_V0, "/aquota.user")  # device path, quota format, quota file path 
-# quota format can be either pq.QFMT_VFS_OLD, pq.QFMT_VFS_V0 or pq.QFMT_VFS_V1.
+pq.user_quota_on("/dev/sda1", pq.QFMT_VFS_V0, "/aquota.user")
 
-# Turn off user quota for a filesystem
+# Turn off user quota
 pq.user_quota_off("/dev/sda1")
 
-# Get quota of a user on a filesystem
-quota = pq.get_user_quota("/dev/sda1", 1000) # 1000 is the uid, returns a tuple of 8 integers
-block_hard_limit = quota[0] # unit: disk quota block (1024 Bytes)
-block_soft_limit = quota[1] # unit: disk quota block (1024 Bytes)
-block_current = quota[2] # unit: block (1 Byte)
-inode_hard_limit = quota[3]
-inode_soft_limit = quota[4]
-inode_current = quota[5]
-block_time = quota[6] # time limit for excessive disk use
-inode_time = quota[7] # time limit for excessive files
+# Get quota (default: named tuple Quota)
+quota = pq.get_user_quota("/dev/sda1", 1000)
+print(quota.block_hard_limit, quota.block_current)
 
-# Get quota of the next user, whose ID is greater than or equal to the specified ID, on a filesystem
-quota = pq.get_next_user_quota("/dev/sda1", 1000) # returns a tuple of 9 integers. 
-# The first 8 integers are the same as the result of pg.get_user_quota while the last integer is the user id. 
-uid = quota[8]
+# Raw tuple: use return_type="tuple"
+raw = pq.get_user_quota("/dev/sda1", 1000, return_type="tuple")
 
-# Set quota of a user on a filesystem
-pq.set_user_quota("/dev/sda1", 1000, 102400, 92160, 0, 0) # hard block limit 100MB, soft block limit 90MB, no inode limits 
+# Get next user with quota (kernel >= 4.6)
+next_quota = pq.get_next_user_quota("/dev/sda1", 1000)  # next_quota.id is the uid
 
-# Get information about the user quotafile for a filesystem
-info = pq.get_user_quota_info("/dev/sda1") # returns a tuple of 3 integers
-block_grace = info[0] # time before block soft limit becomes hard limit. (unit: second)
-inode_grace = info[1] # time before inode soft limit becomes hard limit. (unit: second)
-flags = info[2] # flags for quotafile
-is_root_squash_enabled = bool(flags & pq.DQF_ROOT_SQUASH)
-is_stored_in_system_file = bool(flags & pq.DQF_SYS_FILE)
+# Set user quota (hard 100MB, soft 90MB, no inode limits)
+pq.set_user_quota("/dev/sda1", 1000, 102400, 92160, 0, 0)
 
-# Set information about the user quotafile for a filesystem
-pq.set_user_quota_info("/dev/sda1", 604800, 604800, 0) # set both block grace and inode grace to 1 week (7*24*60*60), set flags as empty 
+# Or pass the result of get_user_quota (only the four limit fields are applied)
+q = pq.get_user_quota("/dev/sda1", 1000)
+pq.set_user_quota("/dev/sda1", 1000, quota=q)
 
-# Get quota format used for user quotas on a filesystem
-fmt = pq.get_user_quota_format("/dev/sda1") # returns an integer 
-# fmt should be either pq.QFMT_VFS_OLD, pq.QFMT_VFS_V0 or pq.QFMT_VFS_V1
+# Quotafile info (grace periods in seconds, flags)
+info = pq.get_user_quota_info("/dev/sda1")
+print(info.block_grace, info.inode_grace)
+print(bool(info.flags & pq.DQF_ROOT_SQUASH), bool(info.flags & pq.DQF_SYS_FILE))
 
-# Update the on-disk copy of user quota usages for a filesystem
+pq.set_user_quota_info("/dev/sda1", 604800, 604800, 0)  # 1 week grace, no flags
+
+# Format: QFMT_VFS_OLD, QFMT_VFS_V0, or QFMT_VFS_V1
+fmt = pq.get_user_quota_format("/dev/sda1")
+
+# Sync quota usage to disk
 pq.sync_user_quotas("/dev/sda1")
-
-# Update the on-disk copy of user quota usages for all filesystems with active quotas
-pq.sync_user_quotas(None)
+pq.sync_user_quotas(None)  # all filesystems with active user quotas
 ```
 
-Since this package is only a wrapper for the C APIs, it almost keeps the original flavor and input/output formats. Thus, if you want more details about the what each of these commands do, meaning of the arguments and meaning of the returned values, please read the [man page](http://man7.org/linux/man-pages/man2/quotactl.2.html). 
+Replace `user` with `group` or `project` for group/project quotas. Project quota requires kernel >= 4.1.
 
-## Error Messages
+## Error handling
 
-Any internal error that comes from the C apis is translated to a `pyquota.APIError` instance with a text description according to the [ERRORS section in the man page](http://man7.org/linux/man-pages/man2/quotactl.2.html#ERRORS).
-  
+Errors from the C API are raised as **`pyquota.APIError`** (or a subclass) with messages matching the [quotactl(2) ERRORS](http://man7.org/linux/man-pages/man2/quotactl.2.html#ERRORS) section. Each instance has an `errno` attribute. Subclasses: **PermissionError** (EPERM), **NotFoundError** (ENOENT, ESRCH), **InvalidError** (EINVAL, etc.); catch `pq.APIError` or use `e.errno`.
+
+```python
+import pyquota as pq
+
+try:
+    pq.get_user_quota("/dev/sda1", 1000)
+except pq.PermissionError:
+    print("Need root or CAP_SYS_ADMIN")
+except pq.NotFoundError as e:
+    print("Not found:", e)
+except pq.APIError as e:
+    print(e, "errno:", e.errno)
+```
+
+Invalid arguments (e.g. empty device path, negative ID) raise `ValueError` before calling the kernel.
+
+## Reference
+
+See the [man page](http://man7.org/linux/man-pages/man2/quotactl.2.html) for detailed semantics of each command. Type stubs (`.pyi`) are provided for IDE completion and type checkers. API documentation is built with Sphinx and published at [https://tjumyk.github.io/pyquota/](https://tjumyk.github.io/pyquota/) when available.

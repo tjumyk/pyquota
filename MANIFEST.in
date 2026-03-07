@@ -1,0 +1,4 @@
+include README.md LICENSE
+include pyproject.toml setup.py
+include pyquota.c
+recursive-include pyquota *.py *.pyi py.typed
