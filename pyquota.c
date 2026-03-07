@@ -26,6 +26,14 @@
 #include <sys/quota.h>
 #include <linux/quota.h> // still required for relatively old kernels
 
+/* Fallbacks when build env has older kernel headers (e.g. manylinux); values match uapi/linux/quota.h */
+#ifndef DQF_ROOT_SQUASH
+#define DQF_ROOT_SQUASH (1 << 0)
+#endif
+#ifndef DQF_SYS_FILE
+#define DQF_SYS_FILE (1 << 16)
+#endif
+
 #define SUBCMD(cmd) ((cmd) >> SUBCMDSHIFT)
 #define ERRMSG_BUF_SIZE 256
 
