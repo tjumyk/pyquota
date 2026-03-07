@@ -23,8 +23,7 @@ Named types
 Enums and constants
 -------------------
 
-- **QuotaFormat** (IntEnum): ``VFS_OLD``, ``VFS_V0``, ``VFS_V1`` for ``quota_on`` / ``get_*_quota_format``.
-- **QFMT_VFS_OLD**, **QFMT_VFS_V0**, **QFMT_VFS_V1**: same as QuotaFormat members (int).
+- **QuotaFormat** (IntEnum): ``VFS_OLD``, ``VFS_V0``, ``VFS_V1`` for ``quota_on`` / ``get_*_quota_format`` (compare return value of ``get_*_quota_format`` with these).
 - **DQF_ROOT_SQUASH**, **DQF_SYS_FILE**: flags from get_*_quota_info (or use ``QuotaInfo.root_squash`` / ``.sys_file``).
 - **EACCES**, **EPERM**, etc.: errno constants for ``APIError.errno``.
 

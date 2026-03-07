@@ -25,17 +25,17 @@ def test_error_hierarchy():
     assert issubclass(pq.InvalidError, pq.APIError)
 
 
-def test_quota_format_constants():
+def test_quota_format_enum_members():
+    """QuotaFormat provides VFS_OLD, VFS_V0, VFS_V1 as ints; values are distinct."""
     import pyquota as pq
 
-    assert hasattr(pq, "QFMT_VFS_OLD")
-    assert hasattr(pq, "QFMT_VFS_V0")
-    assert hasattr(pq, "QFMT_VFS_V1")
-    assert isinstance(pq.QFMT_VFS_OLD, int)
-    assert isinstance(pq.QFMT_VFS_V0, int)
-    assert isinstance(pq.QFMT_VFS_V1, int)
-    # Values from linux/quota.h (may differ by kernel; at least distinct)
-    assert pq.QFMT_VFS_OLD != pq.QFMT_VFS_V0 or pq.QFMT_VFS_V0 != pq.QFMT_VFS_V1
+    assert hasattr(pq.QuotaFormat, "VFS_OLD")
+    assert hasattr(pq.QuotaFormat, "VFS_V0")
+    assert hasattr(pq.QuotaFormat, "VFS_V1")
+    assert isinstance(pq.QuotaFormat.VFS_OLD, int)
+    assert isinstance(pq.QuotaFormat.VFS_V0, int)
+    assert isinstance(pq.QuotaFormat.VFS_V1, int)
+    assert pq.QuotaFormat.VFS_OLD != pq.QuotaFormat.VFS_V0 or pq.QuotaFormat.VFS_V0 != pq.QuotaFormat.VFS_V1
 
 
 def test_quota_info_flags_constants():
@@ -48,13 +48,14 @@ def test_quota_info_flags_constants():
 
 
 def test_quota_format_enum():
-    """QuotaFormat enum mirrors QFMT_* and is usable where int format is expected."""
+    """QuotaFormat enum matches kernel QFMT_* and is usable where int format is expected."""
     import pyquota as pq
 
     assert hasattr(pq, "QuotaFormat")
-    assert pq.QuotaFormat.VFS_OLD == pq.QFMT_VFS_OLD
-    assert pq.QuotaFormat.VFS_V0 == pq.QFMT_VFS_V0
-    assert pq.QuotaFormat.VFS_V1 == pq.QFMT_VFS_V1
+    # Values match C extension (kernel QFMT_*)
+    assert pq.QuotaFormat.VFS_OLD == pq._native.QFMT_VFS_OLD
+    assert pq.QuotaFormat.VFS_V0 == pq._native.QFMT_VFS_V0
+    assert pq.QuotaFormat.VFS_V1 == pq._native.QFMT_VFS_V1
     assert isinstance(pq.QuotaFormat.VFS_V0, int)
 
 

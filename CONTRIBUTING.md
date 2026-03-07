@@ -51,7 +51,7 @@ Output is in `docs/_build/html`. The CI workflow builds docs on push to `main`/`
 
 ## Publishing to PyPI (trusted publishing)
 
-Releases are published to PyPI when a version tag (e.g. `v0.1.2`) is pushed. The workflow uses **trusted publishing** (OIDC); no API token is stored in GitHub.
+Releases are published to PyPI when a version tag (e.g. `v0.0.1`) is pushed. The workflow uses **trusted publishing** (OIDC); no API token is stored in GitHub.
 
 ## Submitting changes
 

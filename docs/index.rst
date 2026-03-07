@@ -24,7 +24,7 @@ Quick start
 
    import pyquota as pq
 
-   pq.user_quota_on("/dev/sda1", pq.QFMT_VFS_V0, "/aquota.user")
+   pq.user_quota_on("/dev/sda1", pq.QuotaFormat.VFS_V0, "/aquota.user")
    q = pq.get_user_quota("/dev/sda1", 1000)
    print(q.block_hard_limit, q.block_current)
 

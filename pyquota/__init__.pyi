@@ -120,11 +120,6 @@ EPERM: int
 ERANGE: int
 ESRCH: int
 
-# Quota format constants (for quota_on, get_*_quota_format)
-QFMT_VFS_OLD: int
-QFMT_VFS_V0: int
-QFMT_VFS_V1: int
-
 # Quota info flags (get_*_quota_info result flags)
 DQF_ROOT_SQUASH: int
 DQF_SYS_FILE: int

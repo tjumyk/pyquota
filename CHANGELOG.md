@@ -7,12 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **Breaking:** **`QFMT_VFS_OLD`**, **`QFMT_VFS_V0`**, **`QFMT_VFS_V1`** are no longer exported from the package. Use **`QuotaFormat.VFS_OLD`**, **`QuotaFormat.VFS_V0`**, **`QuotaFormat.VFS_V1`** for `quota_on` and for comparing with the int return value of `get_*_quota_format()`.
+
 ## [0.1.3] - 2025-03-07
 
 ### Added
 
 - **`iter_user_quotas(device, start_uid=0)`**, **`iter_group_quotas(device, start_gid=0)`**, **`iter_project_quotas(device, start_projid=0)`**: iterators yielding `NextQuota` for each ID with quota (use `get_next_*` for a single "next" query).
-- **`QuotaFormat`** (IntEnum): `VFS_OLD`, `VFS_V0`, `VFS_V1` for `quota_on` / `get_*_quota_format` (backward-compatible with QFMT_* ints).
+- **`QuotaFormat`** (IntEnum): `VFS_OLD`, `VFS_V0`, `VFS_V1` for `quota_on` / `get_*_quota_format`.
 - **`QuotaInfo`** properties **`.root_squash`** and **`.sys_file`**: boolean views of DQF_* flags; type remains tuple-like (indexing, unpacking).
 - **Error context**: exceptions raised from the public API have **`.device`** and **`.id`** set when applicable.
 - **Validation**: `set_*_quota` requires limits to be non-negative ints; raises `ValueError`/`TypeError` before calling the kernel.

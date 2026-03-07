@@ -17,6 +17,7 @@ XFS-specific quotactl commands (e.g. `Q_XQUOTAON`) are not supported.
 - **`get_user_quota`**, **`get_next_user_quota`**, **`get_user_quota_info`** (and group/project) **always return named tuples** (`Quota`, `NextQuota`, `QuotaInfo`). The `return_type` parameter has been removed; results are tuple-compatible (indexing, unpacking).
 - **`get_user_quota_named`** and other **`*_named`** functions are **removed**; use the corresponding `get_*`.
 - **`get_user_quota_with_valid`** and other **`*_with_valid`** functions are **replaced by `get_*_quota_partial`** (and `get_*_quota_info_partial`), which return **named tuples only** (`QuotaPartial`, `NextQuotaPartial`, `QuotaInfoPartial`) with optional fields as `None` when not set.
+- **`QFMT_VFS_OLD`**, **`QFMT_VFS_V0`**, **`QFMT_VFS_V1`** are **no longer exported**. Use **`QuotaFormat.VFS_OLD`**, **`QuotaFormat.VFS_V0`**, **`QuotaFormat.VFS_V1`** for `quota_on` and for comparing with `get_*_quota_format()` return value.
 
 ## Installation
 
@@ -62,7 +63,7 @@ pip install -e .
 ```python
 import pyquota as pq
 
-# Turn on user quota for a filesystem (QuotaFormat or QFMT_* int)
+# Turn on user quota for a filesystem (QuotaFormat)
 pq.user_quota_on("/dev/sda1", pq.QuotaFormat.VFS_V0, "/aquota.user")
 
 # Turn off user quota
@@ -91,7 +92,7 @@ print(info.root_squash, info.sys_file)
 
 pq.set_user_quota_info("/dev/sda1", 604800, 604800, 0)  # 1 week grace, no flags
 
-# Format: QFMT_VFS_OLD, QFMT_VFS_V0, or QFMT_VFS_V1
+# Format: compare with QuotaFormat.VFS_OLD, .VFS_V0, .VFS_V1
 fmt = pq.get_user_quota_format("/dev/sda1")
 
 # Sync quota usage to disk
@@ -118,7 +119,7 @@ except pq.APIError as e:
     print(e, "errno:", e.errno)
 ```
 
-Invalid arguments (e.g. empty device path, negative ID) raise `ValueError` before calling the kernel.
+Invalid arguments (e.g. empty device path, negative ID, non-int or negative limits in `set_*_quota`) raise `ValueError` or `TypeError` before calling the kernel.
 
 ## Reference
 

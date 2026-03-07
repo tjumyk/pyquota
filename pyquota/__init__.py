@@ -33,9 +33,9 @@ from pyquota._native import (
     QIF_INODES,
     QIF_ITIME,
     QIF_SPACE,
-    QFMT_VFS_OLD,
-    QFMT_VFS_V0,
-    QFMT_VFS_V1,
+    QFMT_VFS_OLD as _QFMT_VFS_OLD,
+    QFMT_VFS_V0 as _QFMT_VFS_V0,
+    QFMT_VFS_V1 as _QFMT_VFS_V1,
     get_group_quota as _get_group_quota_raw,
     get_group_quota_info as _get_group_quota_info_raw,
     get_group_quota_info_partial as _get_group_quota_info_partial_raw,
@@ -81,9 +81,9 @@ from pyquota._native import (
 class QuotaFormat(IntEnum):
     """Quota filesystem format for quota_on / get_*_quota_format. Values match kernel QFMT_*."""
 
-    VFS_OLD = QFMT_VFS_OLD
-    VFS_V0 = QFMT_VFS_V0
-    VFS_V1 = QFMT_VFS_V1
+    VFS_OLD = _QFMT_VFS_OLD
+    VFS_V0 = _QFMT_VFS_V0
+    VFS_V1 = _QFMT_VFS_V1
 
 
 # --- Named result types (units: block limits in 1024-byte blocks, block_current in bytes, grace in seconds) ---
@@ -677,9 +677,6 @@ __all__ = [
     "QuotaInfo",
     "QuotaInfoPartial",
     "QuotaPartial",
-    "QFMT_VFS_OLD",
-    "QFMT_VFS_V0",
-    "QFMT_VFS_V1",
     "get_group_quota",
     "get_group_quota_format",
     "get_group_quota_info",
