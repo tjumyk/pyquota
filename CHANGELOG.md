@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-03-07
+
+### Fixed
+
+- Remove unused QIF_/IIF_ imports (IIF_ALL, QIF_ALL, QIF_LIMITS, QIF_TIMES, QIF_USAGE) from `pyquota/__init__.py`; only the bits used by partial conversion helpers are imported (fixes ruff F401).
+
 ## [0.1.0] - 2025-03-07
 
 ### Added
