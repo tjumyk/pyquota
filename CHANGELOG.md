@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2025-03-07
+
+### Fixed
+
+- C extension: add fallback definitions for `DQF_ROOT_SQUASH` and `DQF_SYS_FILE` when the build environment’s kernel headers do not define them (e.g. manylinux CI), so the module compiles and exports the constants with standard values.
+
 ## [0.1.1] - 2025-03-07
 
 ### Fixed
