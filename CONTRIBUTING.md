@@ -49,6 +49,10 @@ cd docs && make html
 
 Output is in `docs/_build/html`. The CI workflow builds docs on push to `main`/`master` and deploys to [GitHub Pages](https://tjumyk.github.io/pyquota/) when Pages is enabled in the repository settings (Settings → Pages → Source: GitHub Actions).
 
+## Publishing to PyPI (trusted publishing)
+
+Releases are published to PyPI when a version tag (e.g. `v0.1.2`) is pushed. The workflow uses **trusted publishing** (OIDC); no API token is stored in GitHub.
+
 ## Submitting changes
 
 1. Open an issue or comment on an existing one to discuss larger changes.
