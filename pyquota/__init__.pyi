@@ -108,21 +108,27 @@ class QuotaFormat(IntEnum):
     VFS_V1 = cast(int, ...)
 
 
-# errno constants (for APIError.errno); see quotactl(2) ERRORS
-EACCES: int
-EBUSY: int
-EFAULT: int
-EINVAL: int
-ENOENT: int
-ENOSYS: int
-ENOTBLK: int
-EPERM: int
-ERANGE: int
-ESRCH: int
+class QuotaInfoFlags(IntEnum):
+    """Flags for get_*_quota_info / set_*_quota_info. Combine with | for flags=."""
 
-# Quota info flags (get_*_quota_info result flags)
-DQF_ROOT_SQUASH: int
-DQF_SYS_FILE: int
+    ROOT_SQUASH = cast(int, ...)
+    SYS_FILE = cast(int, ...)
+
+
+class QuotaErrno(IntEnum):
+    """Errno values for APIError.errno (quotactl(2) ERRORS). Compare e.errno with these."""
+
+    EACCES = cast(int, ...)
+    EBUSY = cast(int, ...)
+    EFAULT = cast(int, ...)
+    EINVAL = cast(int, ...)
+    ENOENT = cast(int, ...)
+    ENOSYS = cast(int, ...)
+    ENOTBLK = cast(int, ...)
+    EPERM = cast(int, ...)
+    ERANGE = cast(int, ...)
+    ESRCH = cast(int, ...)
+
 
 # User quota
 def user_quota_on(device: str, quota_format: int, quota_file: str) -> None: ...

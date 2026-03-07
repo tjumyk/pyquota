@@ -38,13 +38,17 @@ def test_quota_format_enum_members():
     assert pq.QuotaFormat.VFS_OLD != pq.QuotaFormat.VFS_V0 or pq.QuotaFormat.VFS_V0 != pq.QuotaFormat.VFS_V1
 
 
-def test_quota_info_flags_constants():
+def test_quota_info_flags_enum():
+    """QuotaInfoFlags provides ROOT_SQUASH and SYS_FILE; values match kernel DQF_*."""
     import pyquota as pq
 
-    assert hasattr(pq, "DQF_ROOT_SQUASH")
-    assert hasattr(pq, "DQF_SYS_FILE")
-    assert isinstance(pq.DQF_ROOT_SQUASH, int)
-    assert isinstance(pq.DQF_SYS_FILE, int)
+    assert hasattr(pq, "QuotaInfoFlags")
+    assert hasattr(pq.QuotaInfoFlags, "ROOT_SQUASH")
+    assert hasattr(pq.QuotaInfoFlags, "SYS_FILE")
+    assert isinstance(pq.QuotaInfoFlags.ROOT_SQUASH, int)
+    assert isinstance(pq.QuotaInfoFlags.SYS_FILE, int)
+    assert pq.QuotaInfoFlags.ROOT_SQUASH == pq._native.DQF_ROOT_SQUASH
+    assert pq.QuotaInfoFlags.SYS_FILE == pq._native.DQF_SYS_FILE
 
 
 def test_quota_format_enum():
@@ -67,9 +71,9 @@ def test_quota_info_tuple_like_and_flag_properties():
     assert info[0] == 86400 and info[1] == 86400 and info[2] == 0
     assert info.root_squash is False
     assert info.sys_file is False
-    info2 = pq.QuotaInfo(0, 0, pq.DQF_ROOT_SQUASH)
+    info2 = pq.QuotaInfo(0, 0, pq.QuotaInfoFlags.ROOT_SQUASH)
     assert info2.root_squash is True
-    info3 = pq.QuotaInfo(0, 0, pq.DQF_SYS_FILE)
+    info3 = pq.QuotaInfo(0, 0, pq.QuotaInfoFlags.SYS_FILE)
     assert info3.sys_file is True
 
 
@@ -99,9 +103,12 @@ def test_iter_quotas_exported():
     assert callable(pq.iter_user_quotas)
 
 
-def test_errno_constants_exported():
+def test_quota_errno_enum():
+    """QuotaErrno provides errno members; values match kernel (for APIError.errno comparison)."""
     import pyquota as pq
 
-    for name in ("EACCES", "EBUSY", "EFAULT", "EINVAL", "ENOENT", "ENOSYS", "ENOTBLK", "EPERM", "ERANGE", "ESRCH"):
-        assert hasattr(pq, name), f"missing {name}"
-        assert isinstance(getattr(pq, name), int)
+    errno_names = ("EACCES", "EBUSY", "EFAULT", "EINVAL", "ENOENT", "ENOSYS", "ENOTBLK", "EPERM", "ERANGE", "ESRCH")
+    for name in errno_names:
+        assert hasattr(pq.QuotaErrno, name), f"QuotaErrno missing {name}"
+        assert isinstance(getattr(pq.QuotaErrno, name), int)
+        assert getattr(pq.QuotaErrno, name) == getattr(pq._native, name), f"QuotaErrno.{name} should match _native"

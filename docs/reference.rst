@@ -17,15 +17,15 @@ Named types
 
 - **Quota**: ``block_hard_limit``, ``block_soft_limit``, ``block_current`` (bytes), inode fields, ``block_time``, ``inode_time``. Block limits in 1024-byte blocks. Returned by ``get_*_quota`` (tuple-compatible).
 - **NextQuota**: same as Quota plus ``id`` (uid/gid/projid). Returned by ``get_next_*_quota`` and yielded by ``iter_*_quotas`` (tuple-compatible).
-- **QuotaInfo**: ``block_grace``, ``inode_grace`` (seconds), ``flags`` (DQF_*). Returned by ``get_*_quota_info`` (tuple-compatible). Properties **``.root_squash``** and **``.sys_file``** for DQF_* flags.
+- **QuotaInfo**: ``block_grace``, ``inode_grace`` (seconds), ``flags``. Returned by ``get_*_quota_info`` (tuple-compatible). Properties **``.root_squash``** and **``.sys_file``**; use **``QuotaInfoFlags``** for ``set_*_quota_info(..., flags=...)``.
 - **QuotaPartial**, **NextQuotaPartial**, **QuotaInfoPartial**: same fields as above but with ``Optional[int]``; fields the kernel did not set are ``None``. Returned by ``get_*_quota_partial`` and ``get_*_quota_info_partial``.
 
 Enums and constants
 -------------------
 
 - **QuotaFormat** (IntEnum): ``VFS_OLD``, ``VFS_V0``, ``VFS_V1`` for ``quota_on`` / ``get_*_quota_format`` (compare return value of ``get_*_quota_format`` with these).
-- **DQF_ROOT_SQUASH**, **DQF_SYS_FILE**: flags from get_*_quota_info (or use ``QuotaInfo.root_squash`` / ``.sys_file``).
-- **EACCES**, **EPERM**, etc.: errno constants for ``APIError.errno``.
+- **QuotaInfoFlags** (IntEnum): ``ROOT_SQUASH``, ``SYS_FILE`` for ``set_*_quota_info(..., flags=...)`` (combine with ``|``); ``QuotaInfo.root_squash`` / ``.sys_file`` reflect these.
+- **QuotaErrno** (IntEnum): ``EACCES``, ``EBUSY``, ``EFAULT``, ``EINVAL``, ``ENOENT``, ``ENOSYS``, ``ENOTBLK``, ``EPERM``, ``ERANGE``, ``ESRCH`` for comparing with ``APIError.errno``.
 
 Exceptions
 ----------

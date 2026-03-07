@@ -9,18 +9,18 @@ from typing import Iterator, NamedTuple, Optional
 
 from pyquota._native import (
     APIError,
-    DQF_ROOT_SQUASH,
-    DQF_SYS_FILE,
-    EACCES,
-    EBUSY,
-    EFAULT,
-    EINVAL,
-    ENOENT,
-    ENOSYS,
-    ENOTBLK,
-    EPERM,
-    ERANGE,
-    ESRCH,
+    DQF_ROOT_SQUASH as _DQF_ROOT_SQUASH,
+    DQF_SYS_FILE as _DQF_SYS_FILE,
+    EACCES as _EACCES,
+    EBUSY as _EBUSY,
+    EFAULT as _EFAULT,
+    EINVAL as _EINVAL,
+    ENOENT as _ENOENT,
+    ENOSYS as _ENOSYS,
+    ENOTBLK as _ENOTBLK,
+    EPERM as _EPERM,
+    ERANGE as _ERANGE,
+    ESRCH as _ESRCH,
     IIF_BGRACE,
     IIF_FLAGS,
     IIF_IGRACE,
@@ -86,6 +86,28 @@ class QuotaFormat(IntEnum):
     VFS_V1 = _QFMT_VFS_V1
 
 
+class QuotaInfoFlags(IntEnum):
+    """Flags for get_*_quota_info / set_*_quota_info (kernel DQF_*). Combine with | for set_*_quota_info(..., flags=...)."""
+
+    ROOT_SQUASH = _DQF_ROOT_SQUASH
+    SYS_FILE = _DQF_SYS_FILE
+
+
+class QuotaErrno(IntEnum):
+    """Errno values for APIError.errno (quotactl(2) ERRORS). Compare e.errno with these."""
+
+    EACCES = _EACCES
+    EBUSY = _EBUSY
+    EFAULT = _EFAULT
+    EINVAL = _EINVAL
+    ENOENT = _ENOENT
+    ENOSYS = _ENOSYS
+    ENOTBLK = _ENOTBLK
+    EPERM = _EPERM
+    ERANGE = _ERANGE
+    ESRCH = _ESRCH
+
+
 # --- Named result types (units: block limits in 1024-byte blocks, block_current in bytes, grace in seconds) ---
 
 
@@ -130,13 +152,13 @@ class QuotaInfo(NamedTuple):
 
     @property
     def root_squash(self) -> bool:
-        """True if DQF_ROOT_SQUASH is set (v1 format root squash enabled)."""
-        return bool(self.flags & DQF_ROOT_SQUASH)
+        """True if QuotaInfoFlags.ROOT_SQUASH is set (v1 format root squash enabled)."""
+        return bool(self.flags & _DQF_ROOT_SQUASH)
 
     @property
     def sys_file(self) -> bool:
-        """True if DQF_SYS_FILE is set (quota stored in system inode)."""
-        return bool(self.flags & DQF_SYS_FILE)
+        """True if QuotaInfoFlags.SYS_FILE is set (quota stored in system inode)."""
+        return bool(self.flags & _DQF_SYS_FILE)
 
 
 class QuotaPartial(NamedTuple):
@@ -655,18 +677,6 @@ def set_project_quota_info(device: str, block_grace: int, inode_grace: int, flag
 
 __all__ = [
     "APIError",
-    "DQF_ROOT_SQUASH",
-    "DQF_SYS_FILE",
-    "EACCES",
-    "EBUSY",
-    "EFAULT",
-    "EINVAL",
-    "ENOENT",
-    "ENOSYS",
-    "ENOTBLK",
-    "EPERM",
-    "ERANGE",
-    "ESRCH",
     "InvalidError",
     "NotFoundError",
     "NextQuota",
@@ -675,7 +685,9 @@ __all__ = [
     "Quota",
     "QuotaFormat",
     "QuotaInfo",
+    "QuotaInfoFlags",
     "QuotaInfoPartial",
+    "QuotaErrno",
     "QuotaPartial",
     "get_group_quota",
     "get_group_quota_format",

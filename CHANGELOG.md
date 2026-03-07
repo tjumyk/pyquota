@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`QuotaInfoFlags`** (IntEnum): `ROOT_SQUASH`, `SYS_FILE` for `set_*_quota_info(..., flags=...)` and for interpreting `QuotaInfo.flags`. Combine with `|` when setting multiple flags.
+- **`QuotaErrno`** (IntEnum): `EACCES`, `EBUSY`, `EFAULT`, `EINVAL`, `ENOENT`, `ENOSYS`, `ENOTBLK`, `EPERM`, `ERANGE`, `ESRCH` for comparing with `APIError.errno`.
+
 ### Removed
 
 - **Breaking:** **`QFMT_VFS_OLD`**, **`QFMT_VFS_V0`**, **`QFMT_VFS_V1`** are no longer exported from the package. Use **`QuotaFormat.VFS_OLD`**, **`QuotaFormat.VFS_V0`**, **`QuotaFormat.VFS_V1`** for `quota_on` and for comparing with the int return value of `get_*_quota_format()`.
+- **Breaking:** **`DQF_ROOT_SQUASH`**, **`DQF_SYS_FILE`** are no longer exported. Use **`QuotaInfoFlags.ROOT_SQUASH`**, **`QuotaInfoFlags.SYS_FILE`** for `set_*_quota_info(..., flags=...)` (e.g. `flags=pq.QuotaInfoFlags.ROOT_SQUASH | pq.QuotaInfoFlags.SYS_FILE`).
+- **Breaking:** **`EACCES`**, **`EBUSY`**, **`EFAULT`**, **`EINVAL`**, **`ENOENT`**, **`ENOSYS`**, **`ENOTBLK`**, **`EPERM`**, **`ERANGE`**, **`ESRCH`** are no longer exported. Use **`QuotaErrno.EACCES`**, **`QuotaErrno.EPERM`**, etc. for comparing with `APIError.errno` (e.g. `if e.errno == pq.QuotaErrno.EPERM`).
 
 ## [0.1.3] - 2025-03-07
 
