@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, os.path.abspath(".."))
 
 project = "PyQuota"
-copyright = "2019, tjumyk"
+copyright = "2026, tjumyk"
 author = "tjumyk"
 release = "0.1.3"
 
